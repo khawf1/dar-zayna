@@ -1,0 +1,24 @@
+# Render Blueprint: one free web service that builds the static pages and runs the Express server.
+# In Render: New > Blueprint > pick this repository. Secrets marked `sync: false` are asked for at creation.
+services:
+  - type: web
+    name: dar-zayna
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SITE_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: CONTACT_TO_EMAIL
+        sync: false
+      - key: CONTACT_FROM_EMAIL
+        sync: false
