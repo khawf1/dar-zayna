@@ -24,6 +24,8 @@ export default defineConfig({
     trace: 'off',
     navigationTimeout: LIVE_URL ? 90_000 : 15_000, // a sleeping free instance takes about a minute to wake
     ...devices['Desktop Chrome'],
+    // Behind an outbound HTTPS proxy (some CI and cloud machines), send live checks through it.
+    ...(LIVE_URL && !WORKER && process.env.HTTPS_PROXY ? { proxy: { server: process.env.HTTPS_PROXY } } : {}),
   },
   projects: [{ name: 'chromium' }],
   webServer: WORKER

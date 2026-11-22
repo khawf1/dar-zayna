@@ -55,6 +55,8 @@ function initMenuFilter() {
 
   const apply = (filter) => {
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+    // On narrow screens the row scrolls sideways: keep the active button in view.
+    buttons.find((b) => b.dataset.filter === filter)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
     categories.forEach((c) => {
       c.hidden = filter !== 'all' && c.dataset.category !== filter;
     });

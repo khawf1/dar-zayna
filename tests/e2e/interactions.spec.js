@@ -58,6 +58,17 @@ test.describe('menu filter', () => {
     await expect(page.getByRole('button', { name: 'Desserts' })).toHaveAttribute('aria-pressed', 'true');
   });
 
+  test('on a phone, the active filter button is scrolled into view', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 });
+    for (const url of ['/menu/#drinks', '/ar/menu/#drinks']) {
+      await page.goto(url);
+      const row = await page.locator('.menu-filter').boundingBox();
+      const chip = await page.locator('.chip[aria-pressed="true"]').boundingBox();
+      expect(chip.x, url).toBeGreaterThanOrEqual(row.x - 1);
+      expect(chip.x + chip.width, url).toBeLessThanOrEqual(row.x + row.width + 1);
+    }
+  });
+
   test('every dish shows a price', async ({ page }) => {
     await page.goto('/menu/');
     const items = page.locator('.menu-sections .menu-item');
