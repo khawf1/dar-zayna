@@ -1,0 +1,5 @@
+# Local secrets for `npm run worker:dev` (Cloudflare's local runtime).
+# Copy to .dev.vars and fill in. Never commit .dev.vars.
+RESEND_API_KEY=re_your_api_key_here
+CONTACT_TO_EMAIL=owner@example.com
+CONTACT_FROM_EMAIL=Dar Zayna <onboarding@resend.dev>

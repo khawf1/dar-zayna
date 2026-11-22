@@ -1,77 +1,86 @@
-# Deploying Dar Zayna
+# Deploying Dar Zayna (free)
 
-The site is one Node.js service: `npm run build` writes the 15 pages to `dist/`, and `npm start` serves them together with `POST /api/contact`. Everything below uses free plans only.
+Dar Zayna is hosted on **Cloudflare Workers, free plan**:
 
-Facts below were checked on **22 November 2026** in Render's and Resend's own documentation. Providers change their plans, so check again before promising anything to a client.
+- **Static pages, images and fonts** are served by Cloudflare directly: free and unlimited, worldwide, always on, with no sleeping.
+- **The contact form** (`POST /api/contact`) runs in a small Worker (`worker/index.js`). It uses the same validation and email code as the Express server, and only these requests count toward the free allowance of **100,000 requests a day**.
+- **Email** goes through **Resend, free plan**: 3,000 emails a month, 100 a day.
 
-You need two free accounts: **Resend** (email) and **Render** (hosting). Nobody else can create them for you, and you should never paste their keys into a chat, an issue or the code.
+Facts above were checked on **22 November 2026** in Cloudflare's and Resend's documentation. Providers change their plans, so check again before promising anything to a client.
+
+You need two free accounts, Resend and Cloudflare. Create them yourself, and never paste keys into a chat, an issue or the code.
 
 ---
 
 ## Step 1: Resend (email for the contact form)
-
-Free plan: **3,000 emails a month, 100 a day**.
 
 1. Go to https://resend.com and sign up with the email address that should **receive** the contact messages.
 2. Choose how you will send:
    - **A. Demo, no domain (simplest):**
      - The sender is `onboarding@resend.dev`.
      - Resend only delivers it to **the address of your Resend account**, so `CONTACT_TO_EMAIL` must be exactly that address.
-     - This is enough for the portfolio demo.
    - **B. Real restaurant:**
-     - Open **Domains → Add domain**, enter the restaurant's domain and add the DNS records Resend shows at the registrar. Wait until the domain shows as verified.
+     - Open **Domains → Add domain**, enter the restaurant's domain and add the DNS records Resend shows. Wait until it shows as verified.
      - You can then send from any address on that domain, to any inbox.
-3. Open **API Keys → Create API key**. Give it the permission to **send** only, not full access.
-4. Copy the key, which starts with `re_`. Resend shows it only once. Keep it somewhere private (a password manager), and paste it only into Render in step 2.
+3. Open **API Keys → Create API key** with permission to **send** only.
+4. Copy the key, which starts with `re_`. Resend shows it once. Keep it in a password manager, and paste it only into Cloudflare in step 2.
 
-## Step 2: Render (hosting)
+## Step 2: Cloudflare (hosting)
 
-`render.yaml` in this repository describes the whole service, so you only answer three questions.
+1. Go to https://dash.cloudflare.com/sign-up and create a free account. Confirm your email address. Cloudflare's free plan normally doesn't ask for a card; if it does, stop there and tell me.
+2. In the dashboard, open **Workers & Pages** and choose **Create**. Then pick the option to **import a repository** from Git, and connect **GitHub**.
+3. When GitHub asks which repositories Cloudflare may access, choose **Only select repositories → `dar-zayna`**.
+4. Select **`khawf1/dar-zayna`**, then set:
 
-1. Go to https://render.com and sign up with **GitHub** (the `khawf1` account).
-2. When GitHub asks which repositories Render may access, choose **Only select repositories** and select **`dar-zayna`**. Render needs no other repository.
-3. In the Render Dashboard, click **New**, then **Blueprint**.
-4. Pick the **`khawf1/dar-zayna`** repository. Render reads `render.yaml` and shows one web service, `dar-zayna`, on the **Free** plan in **Frankfurt**.
-5. Render asks for the three secret values. Enter them exactly as in the table below.
-6. Confirm to create the Blueprint. The first build takes a few minutes.
-7. When the service shows **Live**, its address is at the top of the service page, for example `https://dar-zayna.onrender.com`. If that name is taken, Render adds a suffix such as `dar-zayna-x1y2.onrender.com`.
+   | Setting | Value |
+   | --- | --- |
+   | Project / Worker name | `dar-zayna` (must match `name` in `wrangler.jsonc`) |
+   | Production branch | `main` |
+   | Build command | `npm run test:backend` (deploys stop if the backend tests fail) |
+   | Deploy command | `npx wrangler deploy` |
 
-### Environment variables
+   Leave everything else as proposed.
+5. Start the deployment. `wrangler deploy` runs `node frontend/build.js` itself (see `build` in `wrangler.jsonc`), then uploads `dist/` and the Worker. The address appears when it finishes, like `https://dar-zayna.<your-subdomain>.workers.dev`.
 
-**You enter these three when Render asks:**
+### Step 3: Add the email settings
 
-| Variable | What to enter | Option A (demo) | Option B (real) |
-| --- | --- | --- | --- |
-| `RESEND_API_KEY` | The key from step 1.3, starting with `re_` | your key | your key |
-| `CONTACT_TO_EMAIL` | Inbox that receives the messages | **your Resend account email** | the restaurant's inbox |
-| `CONTACT_FROM_EMAIL` | Sender of the notifications | `Dar Zayna <onboarding@resend.dev>` | `Dar Zayna <site@restaurant-domain.ma>` |
+The first deploy works without email: the form tells visitors honestly that sending isn't switched on yet. To switch it on, open **Workers & Pages → dar-zayna → Settings → Variables and Secrets**. Add each of these three with the type **Secret**, so later deploys never remove them:
 
-**These come from `render.yaml`, so don't type them:**
-
-| Variable | Value | Why |
+| Name | Value, option A (demo) | Value, option B (real restaurant) |
 | --- | --- | --- |
-| `NODE_VERSION` | `22` | The Node.js version the code is tested on. Render's default is newer. |
-| `TRUST_PROXY` | `1` | Express trusts Render's proxy for HTTPS details. |
-| `CLIENT_IP_HEADER` | `cf-connecting-ip` | Render sits behind Cloudflare, which puts each visitor's real IP address in this header. Without it, all visitors could share one rate limit. |
+| `RESEND_API_KEY` | your Resend key (`re_…`) | your Resend key |
+| `CONTACT_TO_EMAIL` | **your Resend account email** | the restaurant's inbox |
+| `CONTACT_FROM_EMAIL` | `Dar Zayna <onboarding@resend.dev>` | `Dar Zayna <site@restaurant-domain.ma>` |
 
-**These are optional or automatic:**
+Save. The values apply to the next request, with no rebuild needed.
 
-| Variable | When |
-| --- | --- |
-| `PORT` | Set by Render automatically (10000). Do not add it. |
-| `SITE_URL` | Not needed on onrender.com: the build uses Render's `RENDER_EXTERNAL_URL`. Add it only with a custom domain, for example `https://www.restaurant-domain.ma`. |
-| `CONTACT_RATE_LIMIT`, `CONTACT_RATE_WINDOW_MINUTES` | Only to change the default of 5 messages per 15 minutes per visitor. |
+### Step 4: The site address (for links and social previews)
 
-Render asks for the `sync: false` values **only when the Blueprint is first created**. To change a value later: open the service, go to **Environment**, edit the value and save, then redeploy.
+Pages contain their full address in canonical links and social-preview tags.
+1. In **Settings → Build → Variables and secrets** (the *build* settings, not the ones above), add a variable `SITE_URL` with the address from step 2.5, for example `https://dar-zayna.<your-subdomain>.workers.dev`.
+2. Then retry the deployment from the **Deployments** tab, or push any commit.
 
-### Automatic deploys
+With a custom domain, use that domain instead.
 
-`autoDeployTrigger: checksPass` means each push to `main` is deployed only after the GitHub Actions tests pass. A failing commit never goes live.
+## What is already configured (no action needed)
 
-## Step 3: Check the live site
+`wrangler.jsonc` in this repository sets:
 
-1. Open `https://<your-address>/healthz`. It should show `{"ok":true}`. If the service was asleep, the first load takes about a minute.
-2. **Automated check of the whole site** (from a computer with this repository and Node.js 22). It covers all 15 pages, language switching, mobile widths, accessibility, links and form validation:
+| Setting | Value | Why |
+| --- | --- | --- |
+| `assets.directory` | `./dist` | The generated site |
+| `assets.not_found_handling` | `404-page` | Unknown URLs get the nearest `404.html`, so `/ar/...` gets the Arabic one |
+| `assets.html_handling` | `auto-trailing-slash` | `/menu` → `/menu/` |
+| `assets.run_worker_first` | `/api/*`, `/healthz` | Only these run code. Every page and image is served directly. |
+| `ratelimits` | 3 messages per minute per visitor | Approximate, per Cloudflare location. Keyed on `CF-Connecting-IP`, which visitors cannot fake. |
+| `keep_vars` | `true` | Deploys don't wipe variables set in the dashboard |
+
+The security headers (Content Security Policy and others) are written to `dist/_headers` by the build, from `backend/security-headers.js`, the same source the Express server uses.
+
+## Step 5: Check the live site
+
+1. Open `https://<your-address>/healthz`. It should show `{"ok":true}`.
+2. **Whole-site check** (from a computer with this repository and Node.js 22). It covers all 15 pages, language switching, mobile widths, accessibility, links and form validation, and sends no email:
 
    ```bash
    npx playwright install chromium
@@ -81,39 +90,36 @@ Render asks for the `sync: false` values **only when the Blueprint is first crea
    BASE_URL=https://<your-address> npm run test:live
    ```
 
-   The two tests that would send a real email are skipped automatically.
 3. **One real message, by hand:**
    - Open `/contact/`, fill in the form and send it.
-   - You should see the green confirmation, and the email should arrive in `CONTACT_TO_EMAIL` within a minute. Check spam the first time.
-   - Reply to it: the reply goes to the address typed in the form.
+   - You should get the green confirmation, and the email should reach `CONTACT_TO_EMAIL` within a minute. Check spam the first time.
+   - Replying goes to the address typed in the form.
 4. Open the site on your phone and switch between Français, العربية and English.
 
-## What the free plans mean
+## Updates
 
-- **Render sleeps after 15 minutes without visits.** The next visitor waits about **one minute** while Render shows a loading page. Fine for a demo or a portfolio, but not what a paying restaurant should get. For a client, budget for a paid instance or agree on the trade-off in writing.
-- **Render gives 750 free instance hours a month per workspace**: enough for this one service all month. A second always-on free service would share the same hours.
-- HTTPS and custom domains are included.
-- Free services can't use SMTP ports (25, 465, 587). This site doesn't need them: it calls Resend over HTTPS.
-- **Render's disk isn't permanent.** The site stores nothing on disk. The rate-limit counters live in memory and reset when the service restarts.
-- Render says free instances are **not meant for production**.
+Every push to `main` triggers a new build and deploy on Cloudflare. GitHub Actions runs all the tests on the same push, including the browser tests against the Worker in Cloudflare's local runtime (`npm run test:worker`). Keep it green.
 
 ## Custom domain (optional)
 
-1. In Render, open the service, go to **Settings → Custom Domains**, add the domain and create the DNS record Render shows. HTTPS is issued automatically.
-2. Add `SITE_URL=https://<the-domain>` under **Environment**, then redeploy.
+1. Open **Workers & Pages → dar-zayna → Settings → Domains & Routes → Add → Custom domain**. The domain must use Cloudflare for its DNS, which is free.
+2. Set the build variable `SITE_URL` to the new address, then redeploy.
 
 ## Troubleshooting
 
 | What you see | Likely cause | Fix |
 | --- | --- | --- |
-| Form says sending "is not switched on yet" | One of the three email variables is empty | Service → Environment: fill in all three, then redeploy |
-| Form says the message "could not be sent", and the logs show `Resend answered 401` | Wrong or deleted API key | Create a new key in Resend and update `RESEND_API_KEY` |
-| Same message, and the logs show `Resend answered 403` | Option A with a `CONTACT_TO_EMAIL` that is not your Resend account email, or a sender on an unverified domain | Use your account email (A) or verify the domain (B) |
-| Same message, and the logs show `timeout` or `network error` | Resend unreachable for a moment | Try again; if it persists, check https://resend-status.com |
-| Build fails | A broken commit (it would also fail GitHub Actions) | Open the failing build log in Render; run `npm test` locally |
-| First page load takes a minute | The free instance was asleep | Expected on the free plan |
+| Form says sending "is not switched on yet" | One of the three secrets is missing | Settings → Variables and Secrets: add all three (step 3) |
+| Form says the message "could not be sent" | Resend refused the email | Open **Workers & Pages → dar-zayna → Logs**: `Resend answered 401` means a wrong key; `403` means option A with the wrong `CONTACT_TO_EMAIL`, or an unverified domain |
+| Deploy fails and mentions `ratelimits` | Rate limiting isn't available on the account | Remove the `ratelimits` block from `wrangler.jsonc` and push. The form keeps working (honeypot and validation stay), only the per-minute limit is gone. |
+| Deploy fails on the build command | A backend test fails | Run `npm test` locally and fix it |
+| Links in social previews show `localhost` | `SITE_URL` build variable not set | Step 4 |
 
-Render's logs (service → **Logs**) never contain what visitors typed. Only failures are logged, with their reason.
+The Worker's logs never contain what visitors typed. Only failures are logged, with their reason.
+
+## Other hosts
+
+The Express server (`npm start`) still runs on any Node.js 22 host. Use `.env.example` for its settings, `TRUST_PROXY=1` behind a proxy, and `CLIENT_IP_HEADER` when the proxy provides the visitor's IP in a trusted header.
 
 ## Before going live with a real restaurant
 

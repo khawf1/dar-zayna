@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import express from 'express';
 import helmet from 'helmet';
 import { createContactRouter } from './contact/route.js';
+import { helmetDirectives } from './security-headers.js';
 
 const LANGS = ['ar', 'en']; // French lives at the site root.
 
@@ -24,21 +25,7 @@ export function createApp({ staticDir, sendEmail, rateLimit, trustProxy = false,
 
   app.use(
     helmet({
-      contentSecurityPolicy: {
-        useDefaults: false,
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'"],
-          styleSrc: ["'self'"],
-          imgSrc: ["'self'", 'data:'],
-          fontSrc: ["'self'"],
-          connectSrc: ["'self'"],
-          formAction: ["'self'"],
-          frameAncestors: ["'none'"],
-          objectSrc: ["'none'"],
-          baseUri: ["'self'"],
-        },
-      },
+      contentSecurityPolicy: { useDefaults: false, directives: helmetDirectives() },
       // Lets wa.me / external links open without the opener reference issues; pages embed no third-party content.
       crossOriginEmbedderPolicy: false,
     }),
@@ -50,6 +37,9 @@ export function createApp({ staticDir, sendEmail, rateLimit, trustProxy = false,
 
   // Unknown API routes get JSON, not an HTML page.
   app.use('/api', (req, res) => res.status(404).json({ ok: false, error: 'not_found' }));
+
+  // dist/_headers is configuration for Cloudflare, not a page.
+  app.all('/_headers', (req, res) => res.status(404).type('text').send('Not found'));
 
   app.use(
     express.static(staticDir, {

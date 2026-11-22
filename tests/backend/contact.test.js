@@ -251,6 +251,12 @@ describe('site and security headers', () => {
     assert.equal(res.status, 404);
   });
 
+  test('the Cloudflare _headers file is not served', async () => {
+    fs.writeFileSync(path.join(staticDir, '_headers'), '/*\n  X-Test: 1\n');
+    const res = await fetch(`${srv.base}/_headers`);
+    assert.equal(res.status, 404);
+  });
+
   test('health check', async () => {
     const res = await fetch(`${srv.base}/healthz`);
     assert.deepEqual(await res.json(), { ok: true });

@@ -12,10 +12,13 @@
     "build": "node frontend/build.js",
     "start": "node --env-file-if-exists=.env backend/server.js",
     "dev": "npm run build && node --env-file-if-exists=.env --watch-path=backend backend/server.js",
-    "test": "npm run test:backend && npm run test:e2e",
+    "test": "npm run test:backend && npm run test:e2e && npm run test:worker",
     "test:backend": "node --test \"tests/backend/**/*.test.js\"",
     "test:e2e": "npm run build && playwright test",
-    "test:live": "playwright test"
+    "test:live": "playwright test",
+    "test:worker": "TEST_TARGET=worker playwright test",
+    "worker:dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   },
   "dependencies": {
     "express": "^5.3.0",
@@ -25,6 +28,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
-    "@playwright/test": "1.63.0"
+    "@playwright/test": "1.63.0",
+    "wrangler": "^4.166.0"
   }
 }

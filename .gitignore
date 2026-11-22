@@ -37,3 +37,9 @@ Thumbs.db
 test-results/
 playwright-report/
 blob-report/
+
+# Cloudflare Wrangler (local state and local secrets)
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example

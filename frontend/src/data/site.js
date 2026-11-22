@@ -12,9 +12,9 @@ export const site = {
   name: 'Dar Zayna',
   demo: true,
 
-  // Full public address of the site, without a trailing slash: SITE_URL if set (custom domain),
-  // otherwise the onrender.com address Render provides during the build, otherwise localhost.
-  url: (process.env.SITE_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000').replace(/\/$/, ''),
+  // Full public address of the site, without a trailing slash. Set SITE_URL at build time
+  // (a build variable on Cloudflare); used for canonical links and social previews.
+  url: (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, ''),
 
   contact: {
     // Shown as text. In demo mode it is deliberately not a real, dialable number.

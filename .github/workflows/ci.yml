@@ -22,3 +22,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:backend
       - run: npm run test:e2e
+      # The same browser tests against the Cloudflare Worker that gets deployed.
+      - run: npm run test:worker
+        env:
+          WRANGLER_SEND_METRICS: 'false'
