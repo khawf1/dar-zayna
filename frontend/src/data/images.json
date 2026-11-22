@@ -1,0 +1,154 @@
+{
+  "ceramics": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.7499
+  },
+  "chef": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.6667
+  },
+  "cooking": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5004
+  },
+  "courtyard": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.6667
+  },
+  "couscous": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.2626
+  },
+  "hall": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.0
+  },
+  "lantern": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.7499
+  },
+  "lounge": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.3333
+  },
+  "pastries-tea": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5004
+  },
+  "pastries-tray": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.6667
+  },
+  "salads": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.8467
+  },
+  "spices": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.3333
+  },
+  "tagine-kefta": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5004
+  },
+  "tagine-lemon": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5004
+  },
+  "tagine-prunes": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.4981
+  },
+  "tagine-pumpkin": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5004
+  },
+  "tea-glass": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.5626
+  },
+  "tea-pour": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 0.7499
+  },
+  "tea-tray": {
+    "widths": [
+      480,
+      960,
+      1440
+    ],
+    "ratio": 1.5026
+  }
+}
