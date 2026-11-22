@@ -1,5 +1,6 @@
 import express from 'express';
-import { rateLimit } from 'express-rate-limit';
+import { isIP } from 'node:net';
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
 import { contactSchema, invalidFields } from './schema.js';
 import { buildContactEmail } from './email.js';
 
@@ -22,8 +23,9 @@ import { buildContactEmail } from './email.js';
  * @param {object} options
  * @param {((email: object) => Promise<{id: string}>) | null} options.sendEmail  null when email is not configured
  * @param {{windowMs: number, limit: number}} options.rateLimit
+ * @param {string} [options.clientIpHeader]  header holding the visitor's IP (see config.js)
  */
-export function createContactRouter({ sendEmail, rateLimit: limits }) {
+export function createContactRouter({ sendEmail, rateLimit: limits, clientIpHeader = '' }) {
   const router = express.Router();
 
   const limiter = rateLimit({
@@ -31,6 +33,12 @@ export function createContactRouter({ sendEmail, rateLimit: limits }) {
     limit: limits.limit,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
+    // Count messages per visitor. Behind Render's proxies, req.ip can be a shared internal
+    // address, so a trusted header is preferred when configured and valid.
+    keyGenerator: (req) => {
+      const fromHeader = clientIpHeader ? req.get(clientIpHeader)?.trim() : '';
+      return ipKeyGenerator(fromHeader && isIP(fromHeader) ? fromHeader : req.ip);
+    },
     handler: (req, res) => res.status(429).json({ ok: false, error: 'rate_limited' }),
   });
 

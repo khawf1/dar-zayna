@@ -26,8 +26,8 @@ const valid = {
 };
 
 /** Starts the app on a random port and returns helpers. */
-async function startServer({ sendEmail = async () => ({ id: 'test' }), limit = 100 } = {}) {
-  const app = createApp({ staticDir, sendEmail, rateLimit: { windowMs: 60_000, limit } });
+async function startServer({ sendEmail = async () => ({ id: 'test' }), limit = 100, clientIpHeader = '' } = {}) {
+  const app = createApp({ staticDir, sendEmail, rateLimit: { windowMs: 60_000, limit }, clientIpHeader });
   const server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
   });
@@ -189,6 +189,31 @@ describe('rate limiting', () => {
       await srv.close();
     }
   });
+
+  test('with CLIENT_IP_HEADER, each visitor has their own limit', async () => {
+    const srv = await startServer({ limit: 1, clientIpHeader: 'cf-connecting-ip' });
+    const as = (ip) => srv.post(valid, { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip });
+    try {
+      assert.equal((await as('203.0.113.7')).status, 200);
+      assert.equal((await as('203.0.113.7')).status, 429);
+      // Another visitor behind the same proxy is not blocked.
+      assert.equal((await as('198.51.100.20')).status, 200);
+    } finally {
+      await srv.close();
+    }
+  });
+
+  test('an invalid header value falls back to the connection address', async () => {
+    const srv = await startServer({ limit: 1, clientIpHeader: 'cf-connecting-ip' });
+    const as = (ip) => srv.post(valid, { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip });
+    try {
+      assert.equal((await as('not-an-ip')).status, 200);
+      // Both junk values map to the same real address, so the second is limited.
+      assert.equal((await as('also junk')).status, 429);
+    } finally {
+      await srv.close();
+    }
+  });
 });
 
 describe('site and security headers', () => {
@@ -314,5 +339,10 @@ describe('config', () => {
     assert.equal(loadConfig({}).trustProxy, false);
     assert.equal(loadConfig({ TRUST_PROXY: '1' }).trustProxy, 1);
     assert.equal(loadConfig({ TRUST_PROXY: 'true' }).trustProxy, true);
+  });
+
+  test('reads CLIENT_IP_HEADER in lower case', () => {
+    assert.equal(loadConfig({}).clientIpHeader, '');
+    assert.equal(loadConfig({ CLIENT_IP_HEADER: 'CF-Connecting-IP' }).clientIpHeader, 'cf-connecting-ip');
   });
 });

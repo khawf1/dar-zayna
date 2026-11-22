@@ -32,5 +32,6 @@ Budget is zero: free tools and free hosting only.
 | Install | `npm install` |
 | Run locally | `npm run dev`, then open http://localhost:3000 |
 | Test | `npm test` (backend, then Playwright) |
+| Test a deployed site | `BASE_URL=https://… npm run test:live` (skips tests that send real email) |
 | Build | `npm run build` |
 | Photos | `python3 scripts/optimize_images.py <folder>` |

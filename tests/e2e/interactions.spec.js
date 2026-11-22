@@ -1,6 +1,9 @@
 // Navigation, menu filter, gallery lightbox and the contact form, as a visitor uses them.
 import { test, expect } from '@playwright/test';
 
+// Against a deployed site (BASE_URL), never send real messages to the restaurant inbox.
+const LIVE = Boolean(process.env.BASE_URL);
+
 test.describe('mobile navigation', () => {
   test.use({ viewport: { width: 375, height: 740 }, hasTouch: true });
 
@@ -156,6 +159,7 @@ test.describe('contact form', () => {
   });
 
   test('a valid message is sent through the real API and confirmed', async ({ page }) => {
+    test.skip(LIVE, 'Would send a real email; test this once by hand after deploying.');
     await page.goto('/contact/?subject=reservation');
     await fill(page, { subject: 'reservation', message: 'Une table pour quatre, samedi à 20 h.' });
     const responsePromise = page.waitForResponse('**/api/contact');
@@ -170,6 +174,7 @@ test.describe('contact form', () => {
   });
 
   test('when the email service fails, the visitor is told it was not sent', async ({ page }) => {
+    test.skip(LIVE, 'Needs the test server\'s simulated email failure.');
     await page.goto('/en/contact/');
     await fill(page, { message: 'Testing SIMULATE_EMAIL_FAILURE please ignore.' });
     const responsePromise = page.waitForResponse('**/api/contact');

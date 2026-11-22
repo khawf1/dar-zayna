@@ -23,7 +23,13 @@ if (!sendEmail) {
   );
 }
 
-const app = createApp({ staticDir, sendEmail, rateLimit: config.rateLimit, trustProxy: config.trustProxy });
+const app = createApp({
+  staticDir,
+  sendEmail,
+  rateLimit: config.rateLimit,
+  trustProxy: config.trustProxy,
+  clientIpHeader: config.clientIpHeader,
+});
 
 const server = app.listen(config.port, () => {
   console.log(`Dar Zayna is running on http://localhost:${config.port}`);

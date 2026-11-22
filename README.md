@@ -61,8 +61,9 @@ Open http://localhost:3000. Without email settings in `.env` the site works, and
 | `npm start` | Starts the server (run `npm run build` first) |
 | `npm run dev` | Builds, then starts the server and restarts it when backend files change |
 | `npm test` | Runs all tests: backend first, then the browser tests |
-| `npm run test:backend` | 29 API, validation, email and security tests |
+| `npm run test:backend` | 32 API, validation, email, rate-limit and security tests |
 | `npm run test:e2e` | Builds, then runs 69 Playwright tests in Chromium |
+| `BASE_URL=https://… npm run test:live` | Runs the browser tests against a deployed site, without sending real email |
 
 The first time, Playwright may need its browser: `npx playwright install chromium`.
 
@@ -140,7 +141,7 @@ The site is one Node.js service, so the server delivers both the pages and the A
 2. **Menu:** edit `frontend/src/data/menu.js` (dishes, prices in MAD, photos).
 3. **Text:** edit `frontend/src/i18n/fr.js`, `ar.js` and `en.js`. The build stops with a clear message if a language is missing a key.
 4. **Photos:** put the restaurant's own photos in a folder, named like the current ones (for example `tagine-prunes.jpg`), then run `python3 scripts/optimize_images.py <folder>`.
-5. **Address:** set `SITE_URL` to the real domain, used for canonical links and social previews.
+5. **Address:** on a custom domain, set `SITE_URL` to it (on Render's own address it is automatic).
 6. **Check:** run `npm test`.
 
 ## Credits

@@ -26,6 +26,9 @@ export function loadConfig(env = process.env) {
   return {
     port: positiveInt(env.PORT, 3000),
     trustProxy: parseTrustProxy(env.TRUST_PROXY),
+    // Header that carries the visitor's IP, set by a proxy the visitor cannot bypass
+    // (on Render: cf-connecting-ip, set by Cloudflare). Empty: use Express's req.ip.
+    clientIpHeader: env.CLIENT_IP_HEADER?.trim().toLowerCase() || '',
     rateLimit: {
       windowMs: positiveInt(env.CONTACT_RATE_WINDOW_MINUTES, 15) * 60 * 1000,
       limit: positiveInt(env.CONTACT_RATE_LIMIT, 5),

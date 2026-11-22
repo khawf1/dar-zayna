@@ -1,24 +1,30 @@
 # Render Blueprint: one free web service that builds the static pages and runs the Express server.
-# In Render: New > Blueprint > pick this repository. Secrets marked `sync: false` are asked for at creation.
+# In the Render Dashboard: New > Blueprint > pick this repository.
+# Values marked `sync: false` are asked for ONCE, when the Blueprint is first created.
+# To change them later, open the service > Environment.
 services:
   - type: web
     name: dar-zayna
     runtime: node
     plan: free
+    region: frankfurt            # closest Render region to Morocco
     buildCommand: npm ci --omit=dev && npm run build
     startCommand: npm start
     healthCheckPath: /healthz
-    autoDeploy: true
+    autoDeployTrigger: checksPass  # deploy a new commit only after GitHub Actions passes
     envVars:
       - key: NODE_VERSION
         value: "22"
       - key: TRUST_PROXY
         value: "1"
-      - key: SITE_URL
-        sync: false
+      # Render sits behind Cloudflare, which puts the visitor's real IP in this header.
+      - key: CLIENT_IP_HEADER
+        value: cf-connecting-ip
       - key: RESEND_API_KEY
         sync: false
       - key: CONTACT_TO_EMAIL
         sync: false
       - key: CONTACT_FROM_EMAIL
         sync: false
+      # SITE_URL is optional: without it, the site uses Render's onrender.com address
+      # (RENDER_EXTERNAL_URL). Add it in the dashboard only when using a custom domain.

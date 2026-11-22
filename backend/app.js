@@ -15,8 +15,9 @@ const LANGS = ['ar', 'en']; // French lives at the site root.
  * @param {Function|null} options.sendEmail
  * @param {{windowMs:number, limit:number}} options.rateLimit
  * @param {boolean|number|string} [options.trustProxy]
+ * @param {string} [options.clientIpHeader]
  */
-export function createApp({ staticDir, sendEmail, rateLimit, trustProxy = false }) {
+export function createApp({ staticDir, sendEmail, rateLimit, trustProxy = false, clientIpHeader = '' }) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', trustProxy);
@@ -45,7 +46,7 @@ export function createApp({ staticDir, sendEmail, rateLimit, trustProxy = false 
 
   app.get('/healthz', (req, res) => res.json({ ok: true }));
 
-  app.use(createContactRouter({ sendEmail, rateLimit }));
+  app.use(createContactRouter({ sendEmail, rateLimit, clientIpHeader }));
 
   // Unknown API routes get JSON, not an HTML page.
   app.use('/api', (req, res) => res.status(404).json({ ok: false, error: 'not_found' }));
